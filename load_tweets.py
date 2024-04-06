@@ -172,13 +172,23 @@ def insert_tweet(connection,tweet):
         # This means that every "in_reply_to_user_id" field must reference a valid entry in the users table.
         # If the id is not in the users table, then you'll need to add it in an "unhydrated" form.
         if tweet.get('in_reply_to_user_id',None) is not None:
-            sql=sqlalchemy.sql.text('''
-                ''')
-
+            user_id = tweet['in_reply_to_user_id']
+            user_exists = connection.execute(sqlalchemy.sql.text('''SELECT 1 FROM users WHERE id_users = :id_users'''), {'id_users': user_id}).fetchone()
+            if not user_exists:
+                sql = sqlalchemy.sql.text('''INSERT INTO users (id_users) VALUES (:id_users)''')
+                connection.execute(sql, {'id_users': user_id})
+        user_id = tweet['user']['id']
+        user_exists = connection.execute(sqlalchemy.sql.text('''SELECT 1 FROM users WHERE id_users = :id_users'''), {'id_users': user_id}).fetchone()
+        if not user_exists:
+            sql = sqlalchemy.sql.text('''INSERT INTO users (id_users) VALUES (:id_users)''')
+            connection.execute(sql, {'id_users': user_id})
         # insert the tweet
-        sql=sqlalchemy.sql.text(f'''
+        sql=sqlalchemy.sql.text(f''' 
+        INSERT INTO tweets (id_tweets, text, id_users, source)
+        VALUES (:id_tweet, :text, :id_users, :source)
             ''')
-
+        sql = sql.bindparams(text=remove_nulls(tweet['text']), id_tweet = tweet['id'], id_users = tweet['user']['id'], source = tweet['source'])
+        connection.execute(sql)
         ########################################
         # insert into the tweet_urls table
         ########################################
