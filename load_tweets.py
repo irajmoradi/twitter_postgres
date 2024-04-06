@@ -184,10 +184,10 @@ def insert_tweet(connection,tweet):
             connection.execute(sql, {'id_users': user_id})
         # insert the tweet
         sql=sqlalchemy.sql.text(f''' 
-        INSERT INTO tweets (id_tweets, text, id_users, source)
-        VALUES (:id_tweet, :text, :id_users, :source)
+        INSERT INTO tweets (id_tweets, text, id_users, source, in_reply_to_user_id, created_at, quote_count, favorite_count)
+        VALUES (:id_tweet, :text, :id_users, :source, :in_reply_to_user_id, :created_at, :quote_count, :favorite_count)
             ''')
-        sql = sql.bindparams(text=remove_nulls(tweet['text']), id_tweet = tweet['id'], id_users = tweet['user']['id'], source = tweet['source'])
+        sql = sql.bindparams(text=remove_nulls(tweet['text']), id_tweet = tweet['id'], id_users = tweet['user']['id'], source = tweet['source'], in_reply_to_user_id = tweet['in_reply_to_user_id'], created_at = tweet['created_at'],quote_count = tweet['quote_count'], favorite_count = tweet['favorite_count'])
         connection.execute(sql)
         ########################################
         # insert into the tweet_urls table
